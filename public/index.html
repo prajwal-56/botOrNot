@@ -6,13 +6,22 @@
   <title>Bot or Not — Login</title>
   <meta name="description" content="Can you tell AI-generated images from real ones? Enter your name to start.">
   <link rel="stylesheet" href="/style.css">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BHYL3QXKLB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-BHYL3QXKLB');
+  </script>
 </head>
 <body>
   <div class="page">
     <div class="container" style="max-width:480px">
       <div class="text-center" style="margin-bottom:2rem">
         <div class="site-title">Bot or Not</div>
-        <p class="subtitle">Can you tell AI from reality?</p>
+        <p class="subtitle">Ready Or Not, Here I come - pixels</p>
       </div>
 
       <!-- Step 1: Enter name -->
@@ -24,9 +33,9 @@
             <input
               id="username"
               type="text"
-              placeholder="e.g. Prajwal"
+              placeholder="e.g. prawmathean"
               maxlength="32"
-              autocomplete="off"
+              autocomplete="on"
               required
             >
           </div>
@@ -43,7 +52,8 @@
         <p>You're joining as:</p>
         <p style="font-size:1.4rem; font-weight:700; margin-bottom:1.25rem" id="confirm-name"></p>
         <p class="muted" style="margin-bottom:1.5rem">
-          Once you start, a timer begins. You cannot pause. Make sure you're ready.
+          Once you start, a timer begins. You cannot pause. Make sure you're ready.<br>
+          Click <strong>Bot</strong> if the image is AI Generated. <strong>Not</strong> if its Not.
         </p>
         <div style="display:flex; gap:0.75rem">
           <button id="back-btn" class="btn btn-secondary" style="flex:1">Back</button>
