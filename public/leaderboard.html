@@ -44,34 +44,36 @@
     </div>
   </div>
 
+  <script src="/firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/game-engine.js"></script>
   <script>
     const tbody   = document.getElementById('board-body');
     const lastUpd = document.getElementById('last-updated');
 
-    function loadBoard() {
-      fetch('/api/leaderboard')
-        .then(r => r.json())
-        .then(board => {
-          if (board.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="muted text-center" style="padding:2rem">No results yet.</td></tr>';
-            return;
-          }
-          tbody.innerHTML = board.map((row, i) => {
-            const rankClass = i < 3 ? `rank-${i + 1}` : '';
-            return `<tr class="${rankClass}">
-              <td>${i + 1}</td>
-              <td>${esc(row.username)}</td>
-              <td><code>${esc(row.privateIp)}</code></td>
-              <td><strong>${row.points} pts</strong></td>
-              <td>${row.correctCount}</td>
-              <td>${row.totalAnswered}</td>
-            </tr>`;
-          }).join('');
-          lastUpd.textContent = 'Updated ' + new Date().toLocaleTimeString();
-        })
-        .catch(() => {
-          tbody.innerHTML = '<tr><td colspan="6" class="muted text-center">Failed to load — retrying...</td></tr>';
-        });
+    async function loadBoard() {
+      try {
+        const board = await window.GameEngine.getLeaderboard();
+        if (!board || board.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="muted text-center" style="padding:2rem">No results yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = board.map((row, i) => {
+          const rankClass = i < 3 ? `rank-${i + 1}` : '';
+          return `<tr class="${rankClass}">
+            <td>${i + 1}</td>
+            <td>${esc(row.username)}</td>
+            <td><code>${esc(row.privateIp || 'player')}</code></td>
+            <td><strong>${row.points} pts</strong></td>
+            <td>${row.correctCount}</td>
+            <td>${row.totalAnswered}</td>
+          </tr>`;
+        }).join('');
+        lastUpd.textContent = 'Updated ' + new Date().toLocaleTimeString();
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted text-center">Failed to load leaderboard.</td></tr>';
+      }
     }
 
     function esc(str) {

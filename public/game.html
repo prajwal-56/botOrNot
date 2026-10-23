@@ -52,11 +52,16 @@
     </div>
   </div>
 
+  <script src="/firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/game-engine.js"></script>
   <script>
     // ── State ─────────────────────────────────────────────────────
     let username    = sessionStorage.getItem('bon_username');
     let endTime     = new Date(sessionStorage.getItem('bon_endTime')).getTime();
-    let currentId   = null;
+    let catalog     = [];
+    let currentItem = null;
     let imageStart  = null;
     let totalAnswered = 0;
     let totalCorrect  = 0;
@@ -64,8 +69,9 @@
     let timerInterval = null;
     let locked        = false;
     let sessionEnded  = false;
+    let servedIds     = new Set();
 
-    const POINTS_PER_CORRECT = 10; // must match server
+    const POINTS_PER_CORRECT = window.GameEngine.pointsPerCorrect || 10;
 
     const btnBot      = document.getElementById('btn-bot');
     const btnNot      = document.getElementById('btn-not');
@@ -83,8 +89,16 @@
     } else {
       userDisplay.textContent = username;
       startTimer();
-      syncServerTime();
-      loadNextImage();
+      initCatalogAndStart();
+    }
+
+    async function initCatalogAndStart() {
+      try {
+        catalog = await window.GameEngine.loadCatalog();
+        loadNextImage();
+      } catch (err) {
+        statusMsg.textContent = 'Failed to load image catalog. Please refresh.';
+      }
     }
 
     // ── Timer ─────────────────────────────────────────────────────
@@ -109,17 +123,6 @@
       else timerEl.classList.remove('warning');
     }
 
-    async function syncServerTime() {
-      try {
-        const res  = await fetch('/api/session-status', { credentials: 'include' });
-        if (!res.ok) { endSession('Session not found.'); return; }
-        const data = await res.json();
-        if (!data.active) { endSession('Your session has ended.'); return; }
-        endTime = Date.now() + data.remainingMs;
-        sessionStorage.setItem('bon_endTime', new Date(endTime).toISOString());
-      } catch { /* ignore */ }
-    }
-
     // ── Quit ──────────────────────────────────────────────────────
     document.getElementById('quit-btn').addEventListener('click', () => {
       quitOverlay.style.display = 'flex';
@@ -131,39 +134,34 @@
 
     document.getElementById('quit-confirm-btn').addEventListener('click', async () => {
       quitOverlay.style.display = 'none';
-      try {
-        await fetch('/api/quit', { method: 'POST', credentials: 'include' });
-      } catch { /* best effort */ }
       endSession('You quit the game.');
     });
 
     // ── Image Loading ─────────────────────────────────────────────
+    function pickNextItem() {
+      const unserved = catalog.filter(i => !servedIds.has(i.id));
+      const pool = unserved.length > 0 ? unserved : catalog;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
     async function loadNextImage() {
       if (sessionEnded) return;
+      if (!catalog || catalog.length === 0) return;
+
       setButtons(false);
       feedback.textContent = '';
       feedback.className   = 'feedback';
       statusMsg.textContent = '';
 
-      if ((totalAnswered % 5) === 0 && totalAnswered > 0) {
-        syncServerTime();
+      const now = Date.now();
+      if (now > endTime) {
+        endSession('Time\'s up!');
+        return;
       }
 
-      try {
-        const res  = await fetch('/api/next-image', { credentials: 'include' });
-        const data = await res.json();
-
-        if (!res.ok || data.sessionEnded) {
-          endSession('Session ended.');
-          return;
-        }
-
-        currentId = data.imageId;
-        showImage(data.imageUrl);
-      } catch {
-        statusMsg.textContent = 'Network error — retrying in 2s...';
-        setTimeout(loadNextImage, 2000);
-      }
+      currentItem = pickNextItem();
+      servedIds.add(currentItem.id);
+      showImage(currentItem.url);
     }
 
     function showImage(url) {
@@ -187,36 +185,26 @@
 
     // ── Answer ────────────────────────────────────────────────────
     async function submitAnswer(choice) {
-      if (locked || !currentId) return;
+      if (locked || !currentItem) return;
       locked = true;
       setButtons(false);
 
-      const responseTimeMs = imageStart ? Date.now() - imageStart : null;
-
       try {
-        const res  = await fetch('/api/answer', {
-          method:      'POST',
-          headers:     { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body:        JSON.stringify({ imageId: currentId, choice, responseTimeMs }),
-        });
-
-        if (res.status === 403) { endSession('Session has ended.'); return; }
-
-        const data = await res.json();
+        const isCorrect = await window.GameEngine.verifyAnswer(currentItem, choice);
+        const trueLabel = currentItem.label;
 
         totalAnswered++;
-        if (data.correct) {
+        if (isCorrect) {
           totalCorrect++;
           totalPoints += POINTS_PER_CORRECT;
         }
         scoreEl.textContent = `${totalPoints} pts`;
 
-        if (data.correct) {
-          feedback.textContent = `Correct! It was ${data.trueLabel === 'bot' ? 'AI-generated' : 'a real photo'}.`;
+        if (isCorrect) {
+          feedback.textContent = `Correct! It was ${trueLabel === 'bot' ? 'AI-generated' : 'a real photo'}.`;
           feedback.className   = 'feedback correct';
         } else {
-          feedback.textContent = `Wrong. It was ${data.trueLabel === 'bot' ? 'AI-generated' : 'a real photo'}.`;
+          feedback.textContent = `Wrong. It was ${trueLabel === 'bot' ? 'AI-generated' : 'a real photo'}.`;
           feedback.className   = 'feedback wrong';
         }
 
@@ -224,13 +212,16 @@
         sessionStorage.setItem('bon_correct', totalCorrect);
         sessionStorage.setItem('bon_points',  totalPoints);
 
+        // Keep updating leaderboard score progressively
+        window.GameEngine.recordScore(username, totalPoints, totalCorrect, totalAnswered);
+
         setTimeout(() => {
           locked = false;
           loadNextImage();
         }, 800);
 
-      } catch {
-        feedback.textContent = 'Network error — please try again.';
+      } catch (err) {
+        feedback.textContent = 'Error verifying answer.';
         feedback.className   = 'feedback wrong';
         locked = false;
         setButtons(true);
@@ -246,12 +237,15 @@
     }
 
     // ── Session End ───────────────────────────────────────────────
-    function endSession(reason) {
+    async function endSession(reason) {
       if (sessionEnded) return;
       sessionEnded = true;
       clearInterval(timerInterval);
       setButtons(false);
       statusMsg.textContent = reason + ' Redirecting to results...';
+
+      await window.GameEngine.recordScore(username, totalPoints, totalCorrect, totalAnswered);
+
       setTimeout(() => { window.location.href = '/results.html'; }, 1500);
     }
   </script>

@@ -58,6 +58,10 @@
     </div>
   </div>
 
+  <script src="/firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/game-engine.js"></script>
   <script>
     const form        = document.getElementById('login-form');
     const stepName    = document.getElementById('step-name');
@@ -94,35 +98,17 @@
       startMsg.className        = 'msg';
     });
 
-    // Step 2: confirmed — actually log in
+    // Step 2: confirmed — start game
     startBtn.addEventListener('click', async () => {
       startBtn.disabled    = true;
       startBtn.textContent = 'Starting...';
       startMsg.className   = 'msg';
 
       try {
-        const res  = await fetch('/api/login', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ username: pendingUsername }),
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-          startMsg.textContent = data.error || 'Login failed. Try again.';
-          startMsg.className   = 'msg msg-error visible';
-          startBtn.disabled    = false;
-          startBtn.textContent = 'Yes, start the game';
-          return;
-        }
-
-        sessionStorage.setItem('bon_username', data.username);
-        sessionStorage.setItem('bon_endTime',  data.endTime);
-        sessionStorage.setItem('bon_duration', data.sessionDurationMinutes);
-
+        window.GameEngine.startSession(pendingUsername);
         window.location.href = '/game.html';
-      } catch {
-        startMsg.textContent = 'Could not connect to server. Check your connection.';
+      } catch (err) {
+        startMsg.textContent = 'Could not start session. Please try again.';
         startMsg.className   = 'msg msg-error visible';
         startBtn.disabled    = false;
         startBtn.textContent = 'Yes, start the game';
