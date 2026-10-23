@@ -1,11 +1,10 @@
 // Firebase Configuration
-// Replace with your project settings from Firebase Console:
-// Project Settings > General > Your apps > Web app (</>)
 window.FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAqBxSF9Yq1h3jVNHgDUIxDcO5Sc9is2jA",
+  authDomain: "botornot-5059e.firebaseapp.com",
+  projectId: "botornot-5059e",
+  storageBucket: "botornot-5059e.firebasestorage.app",
+  messagingSenderId: "604149414483",
+  appId: "1:604149414483:web:d95b866887e1cf984464a6",
+  measurementId: "G-BHYL3QXKLB"
 };
