@@ -17,7 +17,21 @@
   </script>
 </head>
 <body>
-  <div class="page">
+  <header class="site-navbar">
+    <div class="navbar-inner">
+      <a href="/" class="navbar-brand">Bot or Not</a>
+      <nav>
+        <ul class="navbar-nav">
+          <li><a href="/" class="nav-link">Play</a></li>
+          <li><a href="/leaderboard.html" class="nav-link">Leaderboard</a></li>
+          <li><a href="/contact.html" class="nav-link">Contact</a></li>
+          <li><a href="https://prajwal-56.github.io/donate" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-donate">Donate</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page" style="min-height: calc(100vh - 120px);">
     <div class="container" style="max-width:520px">
       <div class="text-center" style="margin-bottom:1.5rem">
         <div class="site-title">Results</div>
@@ -46,14 +60,41 @@
             <div class="stat-lbl">Wrong</div>
           </div>
         </div>
+
+        <div class="share-section">
+          <span class="share-label">Share Score</span>
+          <div class="share-buttons">
+            <!-- WhatsApp -->
+            <button class="btn-share-icon" onclick="shareWhatsApp()" title="Share on WhatsApp">
+              <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.63C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.04 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.33 7.34 9 7.42 8.72 7.73C8.44 8.04 7.65 8.78 7.65 10.27C7.65 11.76 8.74 13.19 8.89 13.4C9.05 13.6 11 16.65 13.97 17.93C14.68 18.24 15.23 18.42 15.66 18.56C16.37 18.79 17.02 18.76 17.53 18.68C18.1 18.6 19.28 17.97 19.53 17.27C19.78 16.57 19.78 15.97 19.7 15.85C19.62 15.73 19.42 15.66 19.12 15.51C18.82 15.36 17.35 14.64 17.08 14.54C16.81 14.44 16.61 14.39 16.41 14.69C16.21 14.99 15.64 15.66 15.47 15.86C15.3 16.06 15.13 16.08 14.83 15.93C14.53 15.78 13.56 15.46 12.41 14.44C11.52 13.64 10.92 12.65 10.75 12.35C10.58 12.05 10.73 11.89 10.88 11.74C11.02 11.6 11.19 11.38 11.34 11.21C11.49 11.04 11.54 10.92 11.64 10.72C11.74 10.52 11.69 10.35 11.61 10.2C11.53 10.05 10.93 8.58 10.68 7.97C10.44 7.38 10.19 7.46 10 7.45C9.83 7.44 9.63 7.34 9.53 7.34Z"/></svg>
+              <span>WhatsApp</span>
+            </button>
+
+            <!-- X / Twitter -->
+            <button class="btn-share-icon" onclick="shareX()" title="Share on X">
+              <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              <span>X</span>
+            </button>
+
+            <!-- 3 Dots (Native App Tray) -->
+            <button id="dots-share-btn" class="btn-share-icon more-dots" onclick="openShareTray()" title="More apps...">
+              <svg viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+              <span>More</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="text-center">
+      <div class="text-center" style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.6rem;">
         <a href="/leaderboard.html" class="btn btn-primary btn-lg">View Leaderboard</a>
-        <a href="/" class="btn btn-secondary btn-lg" style="margin-left:0.75rem; margin-top:0.5rem">Play Again</a>
+        <a href="/" class="btn btn-secondary btn-lg">Play Again</a>
       </div>
     </div>
   </div>
+
+  <footer class="site-footer">
+    made by <a href="https://prajwal-56.github.io/neobrutal" target="_blank" rel="noopener noreferrer" class="unhighlighted-link">P</a>
+  </footer>
 
   <script>
     const POINTS_PER_CORRECT = 10;
@@ -70,6 +111,66 @@
     document.getElementById('stat-total').textContent        = total;
     document.getElementById('stat-correct').textContent      = correct;
     document.getElementById('stat-wrong').textContent        = wrong;
+
+    const DOMAIN = 'https://botornot-5059e.web.app/';
+
+    function getShareMessage() {
+      return `Hey ! I got ${points}pts in Bot Or Not. \nThink you can beat me?\n\nCheck It out at :`;
+    }
+
+    // 1. WhatsApp share
+    function shareWhatsApp() {
+      const msg = encodeURIComponent(`${getShareMessage()} ${DOMAIN}`);
+      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    }
+
+    // 2. X / Twitter share
+    function shareX() {
+      const msg = encodeURIComponent(getShareMessage());
+      const url = encodeURIComponent(DOMAIN);
+      window.open(`https://twitter.com/intent/tweet?text=${msg}&url=${url}`, '_blank');
+    }
+
+    // 3. Native OS app tray (3-dots)
+    async function openShareTray() {
+      const btn = document.getElementById('dots-share-btn');
+      const shareData = {
+        title: 'Bot or Not',
+        text: getShareMessage(),
+        url: DOMAIN
+      };
+
+      // Try native share sheet first (mobile browsers on HTTPS)
+      if (navigator.share) {
+        const canShare = navigator.canShare ? navigator.canShare(shareData) : true;
+        if (canShare) {
+          try {
+            btn.disabled = true;
+            await navigator.share(shareData);
+            btn.disabled = false;
+            return;
+          } catch (e) {
+            btn.disabled = false;
+            if (e.name === 'AbortError') return; // user dismissed tray — do nothing
+          }
+        }
+      }
+
+      // Desktop / fallback: copy to clipboard and show checkmark feedback
+      const fullText = `${getShareMessage()} ${DOMAIN}`;
+      const originalHTML = btn.innerHTML;
+      if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(fullText);
+          btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Copied!</span>`;
+          setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+        } catch {
+          prompt('Copy this link to share:', fullText);
+        }
+      } else {
+        prompt('Copy this link to share:', fullText);
+      }
+    }
   </script>
 </body>
 </html>

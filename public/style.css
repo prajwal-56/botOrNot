@@ -323,6 +323,74 @@ tr:hover td { background: #fafafa; }
 
 .result-stat span { font-size: 1.2rem; font-weight: 400; color: #52525b; }
 
+/* ── Share Bar ────────────────────────────────── */
+.share-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.share-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #71717a;
+}
+
+.share-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-share-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #18181b;
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btn-share-icon:hover {
+  background: #f4f4f5;
+  border-color: #d4d4d8;
+  transform: translateY(-1px);
+}
+
+.btn-share-icon:active {
+  background: #e4e4e7;
+  transform: translateY(0);
+}
+
+.btn-share-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.btn-share-icon.more-dots {
+  padding: 0.55rem 0.8rem;
+  letter-spacing: 0.1em;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 /* ── Misc ─────────────────────────────────────── */
 .text-center { text-align: center; }
 .mt-1 { margin-top: 0.5rem; }
@@ -330,12 +398,207 @@ tr:hover td { background: #fafafa; }
 .mb-0 { margin-bottom: 0; }
 .muted { color: #71717a; font-size: 0.9rem; }
 
+/* ── Header / Navbar ───────────────────────────── */
+.site-navbar {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid #e4e4e7;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.navbar-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: #18181b;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.navbar-brand:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Hide scrollbar for clean minimal look */
+}
+
+.navbar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-link {
+  color: #52525b;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+.nav-link:hover {
+  color: #18181b;
+  background-color: #f4f4f5;
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  color: #18181b;
+  font-weight: 600;
+}
+
+.nav-link-donate {
+  color: #18181b;
+  background-color: transparent;
+  border: 1px solid #18181b;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.nav-link-donate:hover {
+  color: #ffffff;
+  background-color: #18181b;
+  border-color: #18181b;
+  transform: translateY(-1px);
+}
+
+/* ── Footer ───────────────────────────────────── */
+.site-footer {
+  width: 100%;
+  margin-top: auto;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.88rem;
+  color: #71717a;
+  border-top: 1px solid #e4e4e7;
+  background: transparent;
+}
+
+.unhighlighted-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 1px dotted transparent;
+  transition: opacity 0.2s ease;
+}
+
+.unhighlighted-link:hover {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
 /* ── Responsive ───────────────────────────────── */
+@media (max-width: 600px) {
+  .site-navbar {
+    padding: 0;
+  }
+  .navbar-inner {
+    padding: 0.6rem 0.75rem;
+    gap: 0.5rem;
+  }
+  .navbar-brand {
+    font-size: 1.05rem;
+  }
+  .navbar-nav {
+    gap: 0.35rem;
+  }
+  .nav-link {
+    font-size: 0.82rem;
+    padding: 0.28rem 0.42rem;
+  }
+  .nav-link-donate {
+    padding: 0.28rem 0.55rem;
+  }
+}
+
 @media (max-width: 480px) {
-  h1 { font-size: 1.6rem; }
-  .site-title { font-size: 2rem; }
-  .card { padding: 1.25rem; }
-  .answer-buttons { flex-direction: column; }
-  .btn-bot, .btn-not { font-size: 1.1rem; padding: 0.85rem 1.5rem; }
-  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .page {
+    padding: 1rem 0.75rem;
+  }
+  .container {
+    max-width: 100%;
+  }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  .site-title { font-size: 1.85rem; }
+  .subtitle { font-size: 0.92rem; margin-bottom: 1.25rem; }
+  .card {
+    padding: 1.15rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  .answer-buttons {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .btn-bot, .btn-not {
+    font-size: 1.1rem;
+    padding: 0.85rem 1.25rem;
+    width: 100%;
+  }
+  .share-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.45rem;
+  }
+  .btn-share-icon {
+    padding: 0.55rem 0.35rem;
+    font-size: 0.82rem;
+    justify-content: center;
+  }
+  .btn-share-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .stat-box {
+    padding: 0.85rem;
+  }
+  .stat-box .stat-val {
+    font-size: 1.6rem;
+  }
+  .result-stat {
+    font-size: 2.25rem;
+  }
 }

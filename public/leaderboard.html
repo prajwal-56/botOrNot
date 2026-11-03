@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bot or Not — Leaderboard</title>
   <meta name="description" content="Live leaderboard for the Bot or Not game.">
+  <link rel="canonical" href="https://botornot-5059e.web.app/leaderboard.html">
+  <meta property="og:title" content="Bot or Not — Global Leaderboard">
+  <meta property="og:url" content="https://botornot-5059e.web.app/leaderboard.html">
   <link rel="stylesheet" href="/style.css">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BHYL3QXKLB"></script>
@@ -17,7 +20,21 @@
   </script>
 </head>
 <body>
-  <div class="page" style="justify-content:flex-start; padding-top:2rem;">
+  <header class="site-navbar">
+    <div class="navbar-inner">
+      <a href="/" class="navbar-brand">Bot or Not</a>
+      <nav>
+        <ul class="navbar-nav">
+          <li><a href="/" class="nav-link">Play</a></li>
+          <li><a href="/leaderboard.html" class="nav-link active">Leaderboard</a></li>
+          <li><a href="/contact.html" class="nav-link">Contact</a></li>
+          <li><a href="https://prajwal-56.github.io/donate" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-donate">Donate</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page" style="justify-content:flex-start; padding-top:2rem; min-height: calc(100vh - 120px);">
     <div class="container">
       <div class="text-center" style="margin-bottom:1.5rem">
         <div class="site-title">Leaderboard</div>
@@ -31,14 +48,13 @@
               <tr>
                 <th>Rank</th>
                 <th>Name</th>
-                <th>IP</th>
                 <th>Points</th>
                 <th>Correct</th>
                 <th>Answered</th>
               </tr>
             </thead>
             <tbody id="board-body">
-              <tr><td colspan="6" class="muted text-center" style="padding:2rem">Loading...</td></tr>
+              <tr><td colspan="5" class="muted text-center" style="padding:2rem">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -53,6 +69,10 @@
     </div>
   </div>
 
+  <footer class="site-footer">
+    made by <a href="https://prajwal-56.github.io/neobrutal" target="_blank" rel="noopener noreferrer" class="unhighlighted-link">P</a>
+  </footer>
+
   <script src="/firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -65,7 +85,7 @@
       try {
         const board = await window.GameEngine.getLeaderboard();
         if (!board || board.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="muted text-center" style="padding:2rem">No results yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="muted text-center" style="padding:2rem">No results yet.</td></tr>';
           return;
         }
         tbody.innerHTML = board.map((row, i) => {
@@ -73,7 +93,6 @@
           return `<tr class="${rankClass}">
             <td>${i + 1}</td>
             <td>${esc(row.username)}</td>
-            <td><code>${esc(row.privateIp || 'player')}</code></td>
             <td><strong>${row.points} pts</strong></td>
             <td>${row.correctCount}</td>
             <td>${row.totalAnswered}</td>
@@ -81,7 +100,7 @@
         }).join('');
         lastUpd.textContent = 'Updated ' + new Date().toLocaleTimeString();
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6" class="muted text-center">Failed to load leaderboard.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="muted text-center">Failed to load leaderboard.</td></tr>';
       }
     }
 

@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bot or Not — Login</title>
-  <meta name="description" content="Can you tell AI-generated images from real ones? Enter your name to start.">
+  <meta name="description" content="Can you tell AI-generated images from real ones? A minimal game testing human perception.">
+  <link rel="canonical" href="https://botornot-5059e.web.app/">
+  <meta property="og:title" content="Bot or Not — AI vs Real Photo Game">
+  <meta property="og:description" content="Can you tell AI-generated images from real ones?">
+  <meta property="og:url" content="https://botornot-5059e.web.app/">
+  <meta property="og:type" content="website">
   <link rel="stylesheet" href="/style.css">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BHYL3QXKLB"></script>
@@ -17,7 +22,21 @@
   </script>
 </head>
 <body>
-  <div class="page">
+  <header class="site-navbar">
+    <div class="navbar-inner">
+      <a href="/" class="navbar-brand">Bot or Not</a>
+      <nav>
+        <ul class="navbar-nav">
+          <li><a href="/" class="nav-link active">Play</a></li>
+          <li><a href="/leaderboard.html" class="nav-link">Leaderboard</a></li>
+          <li><a href="/contact.html" class="nav-link">Contact</a></li>
+          <li><a href="https://prajwal-56.github.io/donate" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-donate">Donate</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page" style="min-height: calc(100vh - 120px);">
     <div class="container" style="max-width:480px">
       <div class="text-center" style="margin-bottom:2rem">
         <div class="site-title">Bot or Not</div>
@@ -83,6 +102,10 @@
       </p>
     </div>
   </div>
+
+  <footer class="site-footer">
+    made by <a href="https://prajwal-56.github.io/neobrutal" target="_blank" rel="noopener noreferrer" class="unhighlighted-link">P</a>
+  </footer>
 
   <script src="/firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
