@@ -73,7 +73,8 @@ label {
 
 input[type="text"],
 input[type="password"],
-input[type="number"] {
+input[type="number"],
+select {
   width: 100%;
   padding: 0.65rem 0.85rem;
   font-size: 1rem;
@@ -86,7 +87,8 @@ input[type="number"] {
   transition: border-color 0.1s;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #3f3f46;
   background: #fff;
 }

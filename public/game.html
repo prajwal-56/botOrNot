@@ -230,7 +230,8 @@
         }, 800);
 
       } catch (err) {
-        feedback.textContent = 'Error verifying answer.';
+        console.error('[VerifyAnswer Error]', err);
+        feedback.textContent = `Error verifying answer: ${err && err.message ? err.message : err}`;
         feedback.className   = 'feedback wrong';
         locked = false;
         setButtons(true);
