@@ -8,6 +8,11 @@
   <link rel="stylesheet" href="/style.css">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BHYL3QXKLB"></script>
+  
+    <!-- Google Ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6191036662709209"
+    crossorigin="anonymous"></script>
+
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -15,6 +20,8 @@
 
     gtag('config', 'G-BHYL3QXKLB');
   </script>
+
+
 </head>
 <body>
   <header class="site-navbar">
@@ -131,43 +138,17 @@
       window.open(`https://twitter.com/intent/tweet?text=${msg}&url=${url}`, '_blank');
     }
 
-    // 3. Native OS app tray (3-dots)
+    // 3. Copy to clipboard
     async function openShareTray() {
       const btn = document.getElementById('dots-share-btn');
-      const shareData = {
-        title: 'Bot or Not',
-        text: getShareMessage(),
-        url: DOMAIN
-      };
-
-      // Try native share sheet first (mobile browsers on HTTPS)
-      if (navigator.share) {
-        const canShare = navigator.canShare ? navigator.canShare(shareData) : true;
-        if (canShare) {
-          try {
-            btn.disabled = true;
-            await navigator.share(shareData);
-            btn.disabled = false;
-            return;
-          } catch (e) {
-            btn.disabled = false;
-            if (e.name === 'AbortError') return; // user dismissed tray — do nothing
-          }
-        }
-      }
-
-      // Desktop / fallback: copy to clipboard and show checkmark feedback
       const fullText = `${getShareMessage()} ${DOMAIN}`;
       const originalHTML = btn.innerHTML;
-      if (navigator.clipboard) {
-        try {
-          await navigator.clipboard.writeText(fullText);
-          btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Copied!</span>`;
-          setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
-        } catch {
-          prompt('Copy this link to share:', fullText);
-        }
-      } else {
+
+      try {
+        await navigator.clipboard.writeText(fullText);
+        btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Copied!</span>`;
+        setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+      } catch {
         prompt('Copy this link to share:', fullText);
       }
     }
