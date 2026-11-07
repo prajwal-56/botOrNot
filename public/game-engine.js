@@ -238,22 +238,26 @@
       }
     },
 
-    // Get leaderboard entries
-    async getLeaderboard() {
+    // Get leaderboard entries — pass a Firestore doc snapshot as `afterCursor` for pagination
+    async getLeaderboard(afterCursor = null, pageSize = 25) {
       if (db) {
         try {
-          const snap = await db.collection('leaderboard')
+          let query = db.collection('leaderboard')
             .orderBy('points', 'desc')
-            .limit(50)
-            .get();
+            .limit(pageSize);
+          if (afterCursor) query = query.startAfter(afterCursor);
+          const snap = await query.get();
           const remote = [];
-          snap.forEach(doc => remote.push(doc.data()));
+          snap.forEach(doc => remote.push({ _snap: doc, ...doc.data() }));
           if (remote.length > 0) return remote;
         } catch (e) {
           console.warn('[Firestore] Error fetching leaderboard, falling back to local:', e);
         }
       }
-      return JSON.parse(localStorage.getItem('bon_leaderboard') || '[]');
+      // Local fallback (no pagination support needed — local list is small)
+      const local = JSON.parse(localStorage.getItem('bon_leaderboard') || '[]');
+      const start = afterCursor ? afterCursor._localIndex : 0;
+      return local.slice(start, start + pageSize).map((r, i) => ({ ...r, _localIndex: start + i + 1 }));
     }
   };
 })();
