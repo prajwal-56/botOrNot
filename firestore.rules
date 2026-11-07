@@ -1,6 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
     match /leaderboard/{userId} {
 
       // Anyone can read the leaderboard
@@ -37,5 +38,21 @@ service cloud.firestore {
         //    a legitimate high score with a lower (or fake) one
         (!resource.exists || request.resource.data.points >= resource.data.points);
     }
+
+    match /sessions/{sessionId} {
+      // Not publicly readable — only visible to you via Firebase Console (admin SDK bypasses rules)
+      allow read: if false;
+
+      // Anyone starting a game can write one entry — just validate it has the basics
+      allow create: if
+        request.resource.data.keys().hasAll(['username', 'ip', 'timestamp']) &&
+        request.resource.data.username is string &&
+        request.resource.data.username.size() > 0 &&
+        request.resource.data.username.size() <= 50;
+
+      // Nobody can edit or delete session logs
+      allow update, delete: if false;
+    }
+
   }
 }

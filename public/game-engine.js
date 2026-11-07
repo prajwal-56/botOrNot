@@ -101,6 +101,36 @@
     console.warn('[Firebase] Running in offline / local-storage fallback mode:', err);
   }
 
+  // ── Private: log session info to Firestore (fire-and-forget) ────
+  async function _logSession(username, durationSeconds) {
+    if (!db) return;
+    try {
+      // Get public IP via ipify (free, no auth needed)
+      let ip = 'unknown';
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        ip = ipData.ip || 'unknown';
+      } catch (_) { /* ipify unreachable — still log everything else */ }
+
+      await db.collection('sessions').add({
+        username,
+        ip,
+        durationSeconds,
+        // Browser / device info — all freely available, no permissions needed
+        userAgent  : navigator.userAgent,
+        language   : navigator.language,
+        timezone   : Intl.DateTimeFormat().resolvedOptions().timeZone,
+        screen     : `${screen.width}x${screen.height}`,
+        platform   : navigator.platform || 'unknown',
+        referrer   : document.referrer || 'direct',
+        timestamp  : Date.now()
+      });
+    } catch (e) {
+      console.warn('[GameEngine] Session log failed:', e);
+    }
+  }
+
   window.GameEngine = {
     durationMinutes: DURATION_MINUTES,
     pointsPerCorrect: POINTS_PER_CORRECT,
@@ -135,6 +165,10 @@
     sessionStorage.setItem('bon_score', '0');
     sessionStorage.setItem('bon_correct', '0');
     sessionStorage.setItem('bon_total', '0');
+
+    // Fire-and-forget: log session info to Firestore (non-blocking)
+    _logSession(username, finalSecs);
+
     return { username, endTime, durationSeconds: finalSecs };
   },
 
