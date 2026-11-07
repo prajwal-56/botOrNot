@@ -4,6 +4,11 @@
   const DURATION_MINUTES = (window.GAME_SETTINGS && window.GAME_SETTINGS.durationMinutes) || 3;
   const POINTS_PER_CORRECT = (window.GAME_SETTINGS && window.GAME_SETTINGS.pointsPerCorrect) || 10;
 
+  // ── Session guard (Fix 4) ────────────────────────────────────────
+  // These live only inside this closure — not reachable from the console
+  let _sessionToken    = null;  // set by startSession(), cleared on page unload
+  let _sessionUsername = null;  // must match what's passed to recordScore()
+
   // SHA-256 with fallback when crypto.subtle is unavailable (e.g. non-HTTPS/insecure contexts)
   async function sha256Prefix(text) {
     if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest) {
@@ -118,6 +123,11 @@
     const finalSecs = durationSeconds ? parseInt(durationSeconds, 10) : defaultSecs;
     const now = Date.now();
     const endTime = now + finalSecs * 1000;
+
+    // Mint a one-time session token — stored only in the closure, not on window
+    _sessionToken    = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    _sessionUsername = username;
+
     sessionStorage.setItem('bon_username', username);
     sessionStorage.setItem('bon_endTime', new Date(endTime).toISOString());
     sessionStorage.setItem('bon_duration_seconds', String(finalSecs));
@@ -136,6 +146,30 @@
 
     // Save final or live score
     async recordScore(username, points, correctCount, totalAnswered) {
+      // ── Fix 4: Session guard ────────────────────────────────────
+      // Reject calls that didn't go through a real startSession()
+      if (!_sessionToken) {
+        console.warn('[GameEngine] recordScore blocked — no active session token.');
+        return;
+      }
+      if (username !== _sessionUsername) {
+        console.warn('[GameEngine] recordScore blocked — username mismatch.');
+        return;
+      }
+
+      // ── Basic sanity checks (client-side mirror of Firestore rules) ──
+      const maxPossiblePoints = totalAnswered * POINTS_PER_CORRECT;
+      if (
+        points < 0 ||
+        correctCount < 0 ||
+        totalAnswered < 0 ||
+        correctCount > totalAnswered ||
+        points > maxPossiblePoints ||
+        points !== correctCount * POINTS_PER_CORRECT
+      ) {
+        console.warn('[GameEngine] recordScore blocked — implausible values.');
+        return;
+      }
       // 1. Always keep local copy
       const localLb = JSON.parse(localStorage.getItem('bon_leaderboard') || '[]');
       const existing = localLb.findIndex(p => p.username === username);

@@ -2,7 +2,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /leaderboard/{userId} {
-      allow read, write: if true;
+
+      // Anyone can read the leaderboard
+      allow read: if true;
+
+      // Writes must pass all of these checks:
+      allow write: if
+        // 1. All required fields must be present
+        request.resource.data.keys().hasAll([
+          'username', 'points', 'correctCount', 'totalAnswered', 'timestamp'
+        ]) &&
+
+        // 2. Username in the document must match the document ID
+        //    (prevents writing to someone else's leaderboard slot)
+        request.resource.data.username == userId &&
+
+        // 3. No negative numbers
+        request.resource.data.points       >= 0 &&
+        request.resource.data.correctCount >= 0 &&
+        request.resource.data.totalAnswered >= 0 &&
+
+        // 4. Points must equal correctCount × 10 exactly
+        //    (the only way to earn points in the game)
+        request.resource.data.points == request.resource.data.correctCount * 10 &&
+
+        // 5. Can't have more correct answers than total answers
+        request.resource.data.correctCount <= request.resource.data.totalAnswered &&
+
+        // 6. Hard cap — 50,000 pts would need 5,000 correct answers,
+        //    which is physically impossible in any supported game duration
+        request.resource.data.points <= 50000 &&
+
+        // 7. Score can only go up — prevents someone overwriting
+        //    a legitimate high score with a lower (or fake) one
+        (!resource.exists || request.resource.data.points >= resource.data.points);
     }
   }
 }
