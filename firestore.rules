@@ -2,6 +2,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function hasValidSession(userId, data) {
+      return exists(/databases/$(database)/documents/active_sessions/$(userId)) &&
+             sessionChecks(get(/databases/$(database)/documents/active_sessions/$(userId)).data, data);
+    }
+
+    function sessionChecks(session, data) {
+      let elapsedSeconds = (request.time.toMillis() - session.startedAt.toMillis()) / 1000;
+      return data.durationSeconds == session.durationSeconds &&
+             elapsedSeconds >= 0 &&
+             data.totalAnswered <= (elapsedSeconds * 2 + 5) &&
+             elapsedSeconds <= (session.durationSeconds + 90);
+    }
+
+    match /active_sessions/{userId} {
+      allow read: if false;
+      allow create, update: if
+        request.resource.data.username == userId &&
+        request.resource.data.username is string &&
+        request.resource.data.username.size() > 0 &&
+        request.resource.data.username.size() <= 50 &&
+        request.resource.data.durationSeconds is int &&
+        request.resource.data.durationSeconds in [60, 90, 156, 200, 500, 560, 10000] &&
+        request.resource.data.startedAt == request.time;
+      allow delete: if false;
+    }
+
     match /leaderboard/{userId} {
 
       // Anyone can read the leaderboard
@@ -11,32 +37,43 @@ service cloud.firestore {
       allow write: if
         // 1. All required fields must be present
         request.resource.data.keys().hasAll([
-          'username', 'points', 'correctCount', 'totalAnswered', 'timestamp'
+          'username', 'points', 'correctCount', 'totalAnswered', 'durationSeconds', 'timestamp'
         ]) &&
 
         // 2. Username in the document must match the document ID
-        //    (prevents writing to someone else's leaderboard slot)
         request.resource.data.username == userId &&
+        request.resource.data.username is string &&
+        request.resource.data.username.size() > 0 &&
+        request.resource.data.username.size() <= 50 &&
 
-        // 3. No negative numbers
+        // 3. Proper types and non-negative values
+        request.resource.data.points is int &&
+        request.resource.data.correctCount is int &&
+        request.resource.data.totalAnswered is int &&
+        request.resource.data.durationSeconds is int &&
+        request.resource.data.timestamp is int &&
         request.resource.data.points       >= 0 &&
         request.resource.data.correctCount >= 0 &&
         request.resource.data.totalAnswered >= 0 &&
 
         // 4. Points must equal correctCount × 10 exactly
-        //    (the only way to earn points in the game)
         request.resource.data.points == request.resource.data.correctCount * 10 &&
 
         // 5. Can't have more correct answers than total answers
         request.resource.data.correctCount <= request.resource.data.totalAnswered &&
 
-        // 6. Hard cap — 50,000 pts would need 5,000 correct answers,
-        //    which is physically impossible in any supported game duration
-        request.resource.data.points <= 50000 &&
+        // 6. Duration must be a supported game mode
+        request.resource.data.durationSeconds in [60, 90, 156, 200, 500, 560, 10000] &&
 
-        // 7. Score can only go up — prevents someone overwriting
+        // 7. Max answered questions cannot exceed twice the duration in seconds
+        request.resource.data.totalAnswered <= request.resource.data.durationSeconds * 2 &&
+
+        // 8. Server-verified timing validation against active_sessions
+        hasValidSession(userId, request.resource.data) &&
+
+        // 9. Score can only go up — prevents someone overwriting
         //    a legitimate high score with a lower (or fake) one
-        (!resource.exists || request.resource.data.points >= resource.data.points);
+        (resource == null || request.resource.data.points >= resource.data.points);
     }
 
     match /sessions/{sessionId} {

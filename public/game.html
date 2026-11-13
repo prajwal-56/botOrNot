@@ -104,6 +104,9 @@
       userDisplay.textContent = username;
       startTimer();
       initCatalogAndStart();
+      if (window.GameEngine && window.GameEngine.logSession) {
+        window.GameEngine.logSession(username);
+      }
     }
 
     async function initCatalogAndStart() {
@@ -225,9 +228,6 @@
         sessionStorage.setItem('bon_total',   totalAnswered);
         sessionStorage.setItem('bon_correct', totalCorrect);
         sessionStorage.setItem('bon_points',  totalPoints);
-
-        // Keep updating leaderboard score progressively
-        window.GameEngine.recordScore(username, totalPoints, totalCorrect, totalAnswered);
 
         setTimeout(() => {
           locked = false;

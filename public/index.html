@@ -167,7 +167,7 @@
       startMsg.className   = 'msg';
 
       try {
-        window.GameEngine.startSession(pendingUsername, pendingDuration);
+        await window.GameEngine.startSession(pendingUsername, pendingDuration);
         window.location.href = '/game.html';
       } catch (err) {
         startMsg.textContent = 'Could not start session. Please try again.';

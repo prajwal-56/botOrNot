@@ -4,10 +4,6 @@
   const DURATION_MINUTES = (window.GAME_SETTINGS && window.GAME_SETTINGS.durationMinutes) || 3;
   const POINTS_PER_CORRECT = (window.GAME_SETTINGS && window.GAME_SETTINGS.pointsPerCorrect) || 10;
 
-  // ── Session guard (Fix 4) ────────────────────────────────────────
-  // These live only inside this closure — not reachable from the console
-  let _sessionToken    = null;  // set by startSession(), cleared on page unload
-  let _sessionUsername = null;  // must match what's passed to recordScore()
 
   // SHA-256 with fallback when crypto.subtle is unavailable (e.g. non-HTTPS/insecure contexts)
   async function sha256Prefix(text) {
@@ -134,6 +130,7 @@
   window.GameEngine = {
     durationMinutes: DURATION_MINUTES,
     pointsPerCorrect: POINTS_PER_CORRECT,
+    logSession: _logSession,
 
     // Load images list
     async loadCatalog() {
@@ -148,15 +145,11 @@
     },
 
   // Start player session with duration in seconds (defaults to window.GAME_SETTINGS or 60s)
-  startSession(username, durationSeconds) {
+  async startSession(username, durationSeconds) {
     const defaultSecs = ((window.GAME_SETTINGS && window.GAME_SETTINGS.durationMinutes) || 1) * 60;
     const finalSecs = durationSeconds ? parseInt(durationSeconds, 10) : defaultSecs;
     const now = Date.now();
     const endTime = now + finalSecs * 1000;
-
-    // Mint a one-time session token — stored only in the closure, not on window
-    _sessionToken    = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    _sessionUsername = username;
 
     sessionStorage.setItem('bon_username', username);
     sessionStorage.setItem('bon_endTime', new Date(endTime).toISOString());
@@ -165,6 +158,19 @@
     sessionStorage.setItem('bon_score', '0');
     sessionStorage.setItem('bon_correct', '0');
     sessionStorage.setItem('bon_total', '0');
+
+    // Register active session in Firestore with server timestamp
+    if (db) {
+      try {
+        await db.collection('active_sessions').doc(username).set({
+          username,
+          durationSeconds: finalSecs,
+          startedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (e) {
+        console.warn('[GameEngine] Failed to register active session:', e);
+      }
+    }
 
     // Fire-and-forget: log session info to Firestore (non-blocking)
     _logSession(username, finalSecs);
@@ -180,18 +186,9 @@
 
     // Save final or live score
     async recordScore(username, points, correctCount, totalAnswered) {
-      // ── Fix 4: Session guard ────────────────────────────────────
-      // Reject calls that didn't go through a real startSession()
-      if (!_sessionToken) {
-        console.warn('[GameEngine] recordScore blocked — no active session token.');
-        return;
-      }
-      if (username !== _sessionUsername) {
-        console.warn('[GameEngine] recordScore blocked — username mismatch.');
-        return;
-      }
+      const durationSeconds = parseInt(sessionStorage.getItem('bon_duration_seconds') || '60', 10);
 
-      // ── Basic sanity checks (client-side mirror of Firestore rules) ──
+      // ── Sanity checks (client-side mirror of Firestore rules) ──
       const maxPossiblePoints = totalAnswered * POINTS_PER_CORRECT;
       if (
         points < 0 ||
@@ -199,7 +196,8 @@
         totalAnswered < 0 ||
         correctCount > totalAnswered ||
         points > maxPossiblePoints ||
-        points !== correctCount * POINTS_PER_CORRECT
+        points !== correctCount * POINTS_PER_CORRECT ||
+        totalAnswered > durationSeconds * 2
       ) {
         console.warn('[GameEngine] recordScore blocked — implausible values.');
         return;
@@ -212,6 +210,7 @@
         points,
         correctCount,
         totalAnswered,
+        durationSeconds,
         timestamp: Date.now()
       };
       if (existing >= 0) {

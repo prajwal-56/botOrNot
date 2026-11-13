@@ -95,7 +95,6 @@
     const PAGE_SIZE = 36;
     let lastCursor  = null;   // Firestore doc snapshot for startAfter()
     let globalRank  = 0;      // running rank counter across pages
-    let autoRefresh = null;
 
     function esc(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -148,14 +147,11 @@
 
     async function resetAndLoad() {
       // Clear table, reset state, reload from top
-      clearInterval(autoRefresh);
       lastCursor  = null;
       globalRank  = 0;
       loadMoreWrap.hidden = true;
       tbody.innerHTML = '<tr data-placeholder><td colspan="5" class="muted text-center" style="padding:2rem">Loading...</td></tr>';
       await loadMore();
-      // Auto-refresh every 10s only on page 1
-      autoRefresh = setInterval(() => { if (!lastCursor || globalRank <= PAGE_SIZE) resetAndLoad(); }, 10_000);
     }
 
     resetAndLoad();
